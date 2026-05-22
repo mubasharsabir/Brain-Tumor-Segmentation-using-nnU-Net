@@ -76,17 +76,47 @@ export nnUNet_results="/path/to/your/nnUNet_results"
    * Enter the desired **Z-Axis Slice ID** (e.g., `75`).
    * Click **Upload and Predict**. The backend will process the files through `nnU-Net` and render the result.
 
-## 📂 Project Structure
+---
+
+## 📁 Project Structure
+
 ```text
-├── .idea/                     # IDE configuration files
-├── __pycache__/               # Compiled Python files
+├── Model/                     
+│   └── Trained nnU-Net model weights
+│
+├── Notebook/
+│   └── brain_tumor_unet.ipynb
+│       (Jupyter notebook for training and experiments)
+│
+├── Sample Patients/
+│   ├── BraTS2021_00077/
+│   │   ├── BraTS2021_00077_flair.nii.gz
+│   │   ├── BraTS2021_00077_seg.nii.gz
+│   │   ├── BraTS2021_00077_t1.nii.gz
+│   │   ├── BraTS2021_00077_t1ce.nii.gz
+│   │   └── BraTS2021_00077_t2.nii.gz
+│   │
+│   └── BraTS2021_00320/
+│       ├── BraTS2021_00320_flair.nii.gz
+│       ├── BraTS2021_00320_seg.nii.gz
+│       ├── BraTS2021_00320_t1.nii.gz
+│       ├── BraTS2021_00320_t1ce.nii.gz
+│       └── BraTS2021_00320_t2.nii.gz
+│
 ├── templates/
-│   └── index.html             # Frontend user interface
-├── uploads/                   # Temporary directory for incoming NIfTI files (auto-cleared)
-├── predictions/               # Temporary directory for nnU-Net output masks (auto-cleared)
-├── app.py                     # Main Flask application and backend routing
-├── requirements.txt           # Python package dependencies
-└── README.md                  # Project documentation
+│   └── index.html
+│       (Frontend web interface for visualization)
+│
+├── app.py
+│   (Flask backend for model inference and routing)
+│
+├── requirements.txt
+│   (Python dependencies)
+│
+├── LICENSE
+│   (Open-source license)
+│
+└── README.md
 ```
 *(Note: Ensure your `nnUNet_results` folder is securely stored either within the project or linked via environment variables).*
 
