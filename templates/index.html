@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BraTS AI | Professional Segmentation Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-input: #0b1120;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-hover: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            width: 380px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .brand {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        
+        .brand span {
+            color: var(--primary);
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 5px 0 0 0;
+        }
+
+        /* Toggle Switches */
+        .toggle-group {
+            display: flex;
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .toggle-group label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .toggle-group input[type="radio"] { display: none; }
+        
+        .toggle-group span {
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-group input[type="radio"]:checked + span {
+            background-color: var(--border);
+            color: #fff;
+        }
+
+        /* Drop Zones (File Inputs) */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group > label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .drop-zone {
+            position: relative;
+            background-color: var(--bg-input);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+
+        .drop-zone.has-file {
+            border-style: solid;
+            border-color: var(--primary);
+        }
+        .drop-zone.has-file .file-name {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Slider Controls */
+        .slider-container {
+            background: var(--bg-input);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider-header label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .slider-header input[type="number"] {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: #fff;
+            width: 50px;
+            padding: 4px;
+            border-radius: 4px;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Main Button */
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: auto;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        /* Main Viewer Area */
+        .viewer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: radial-gradient(circle at center, var(--bg-panel) 0%, var(--bg-dark) 100%);
+            position: relative;
+        }
+
+        .results-container {
+            width: 100%;
+            max-width: 1400px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            background-color: #000;
+        }
+
+        .empty-state {
+            color: var(--border-hover);
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader p {
+            color: var(--text-muted);
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h1>BraTS <span>AI</span></h1>
+            <p>3D U-Net Medical Segmentation</p>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="prediction-form" style="display: flex; flex-direction: column; flex: 1;">
+            
+            <div class="toggle-group">
+                <label>
+                    <input type="radio" name="upload_type" value="folder" checked onchange="toggleUploadMode()"> 
+                    <span>📁 Folder Upload</span>
+                </label>
+                <label>
+                    <input type="radio" name="upload_type" value="files" onchange="toggleUploadMode()"> 
+                    <span>📄 Explicit Files</span>
+                </label>
+            </div>
+
+            <div id="folder-upload-section">
+                <div class="form-group">
+                    <label>Patient Directory</label>
+                    <div class="drop-zone" id="folder-zone">
+                        <span class="file-name" id="folder-name">Click to browse patient folder...</span>
+                        <input type="file" id="patient_folder" name="patient_folder" webkitdirectory directory multiple required onchange="updateFileName(this, 'folder-name', 'folder-zone')">
+                    </div>
+                </div>
+            </div>
+
+            <div id="files-upload-section" style="display: none;">
+                <div class="form-group">
+                    <label>FLAIR Modality</label>
+                    <div class="drop-zone" id="flair-zone">
+                        <span class="file-name" id="flair-name">Select FLAIR .nii.gz</span>
+                        <input type="file" id="flair" name="flair" accept=".nii,.nii.gz" onchange="updateFileName(this, 'flair-name', 'flair-zone')">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>T1 Modality</label>
+                    <div class="drop-zone" id="t1-zone">
+                        <span class="file-name" id="t1-name">Select T1 .nii.gz</span>
+                        <input type="file" id="t1" name="t1" accept=".nii,.nii.gz" onchange="updateFileName(this, 't1-name', 't1-zone')">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>T1CE Modality</label>
+                    <div class="drop-zone" id="t1ce-zone">
+                        <span class="file-name" id="t1ce-name">Select T1CE .nii.gz</span>
+                        <input type="file" id="t1ce" name="t1ce" accept=".nii,.nii.gz" onchange="updateFileName(this, 't1ce-name', 't1ce-zone')">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>T2 Modality</label>
+                    <div class="drop-zone" id="t2-zone">
+                        <span class="file-name" id="t2-name">Select T2 .nii.gz</span>
+                        <input type="file" id="t2" name="t2" accept=".nii,.nii.gz" onchange="updateFileName(this, 't2-name', 't2-zone')">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="color: var(--success);">Ground Truth Mask</label>
+                    <div class="drop-zone" id="seg-zone">
+                        <span class="file-name" id="seg-name">Select Seg .nii.gz</span>
+                        <input type="file" id="seg" name="seg" accept=".nii,.nii.gz" onchange="updateFileName(this, 'seg-name', 'seg-zone')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="slider-container">
+                <div class="slider-header">
+                    <label>Z-Axis Slice (Depth)</label>
+                    <input type="number" id="slice_id_input" name="slice_id" value="{{ slice_id }}" min="0" max="143" required oninput="document.getElementById('slice_slider').value = this.value">
+                </div>
+                <input type="range" id="slice_slider" min="0" max="143" value="{{ slice_id }}" oninput="document.getElementById('slice_id_input').value = this.value">
+            </div>
+
+            <button type="submit" id="submit-btn">Run Inference</button>
+        </form>
+    </aside>
+
+    <main class="viewer">
+        
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>Processing 3D volume into neural network...</p>
+        </div>
+
+        {% if img_data %}
+            <div class="results-container" id="results-view">
+                <img src="data:image/png;base64,{{ img_data }}" alt="Segmentation Results">
+            </div>
+        {% else %}
+            <div class="empty-state" id="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <h2>Awaiting Scan Data</h2>
+                <p style="font-size: 0.9rem;">Upload a patient folder or specific modalities from the sidebar to begin analysis.</p>
+            </div>
+        {% endif %}
+    </main>
+
+    <script>
+        // Update the visual text inside the drop zone when a file is selected
+        function updateFileName(inputElement, textId, zoneId) {
+            const textSpan = document.getElementById(textId);
+            const dropZone = document.getElementById(zoneId);
+            
+            if (inputElement.files && inputElement.files.length > 0) {
+                // If folder upload, show folder name by splitting the path of the first file
+                if (inputElement.hasAttribute('webkitdirectory')) {
+                    const pathParts = inputElement.files[0].webkitRelativePath.split('/');
+                    textSpan.textContent = "Folder: " + pathParts[0];
+                } else {
+                    // Normal file upload
+                    textSpan.textContent = inputElement.files[0].name;
+                }
+                dropZone.classList.add('has-file');
+            } else {
+                dropZone.classList.remove('has-file');
+            }
+        }
+
+        // Switch between folder and explicit file upload modes
+        function toggleUploadMode() {
+            const uploadType = document.querySelector('input[name="upload_type"]:checked').value;
+            const folderSection = document.getElementById('folder-upload-section');
+            const filesSection = document.getElementById('files-upload-section');
+            const fileInputs = ['flair', 't1', 't1ce', 't2', 'seg'];
+
+            if (uploadType === 'folder') {
+                folderSection.style.display = 'block';
+                filesSection.style.display = 'none';
+                
+                document.getElementById('patient_folder').required = true;
+                fileInputs.forEach(id => document.getElementById(id).required = false);
+            } else {
+                folderSection.style.display = 'none';
+                filesSection.style.display = 'block';
+                
+                document.getElementById('patient_folder').required = false;
+                fileInputs.forEach(id => document.getElementById(id).required = true);
+            }
+        }
+
+        // Loading state UI interactions
+        document.getElementById('prediction-form').addEventListener('submit', function() {
+            // Hide the empty state or previous results
+            const emptyState = document.getElementById('empty-state');
+            if(emptyState) emptyState.style.display = 'none';
+            
+            const resultsView = document.getElementById('results-view');
+            if(resultsView) resultsView.style.display = 'none';
+
+            // Show loader and disable button
+            const btn = document.getElementById('submit-btn');
+            btn.textContent = 'Processing...';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+            
+            document.getElementById('loader').style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
