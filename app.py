@@ -184,4 +184,5 @@ def index():
     return render_template('index.html', img_data=img_data, slice_id=slice_id, error=error_msg)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Hugging face requires port 7860
+    app.run(host="0.0.0.0", port=7860, debug=False)
